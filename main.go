@@ -129,7 +129,12 @@ func main() {
 						},
 						&cli.BoolFlag{
 							Name:  "with-gha-oidc",
-							Usage: "Enables assuming of IAM role via OIDC",
+							Usage: "Enables assuming of IAM role via OIDC for Github Actions",
+							Value: false,
+						},
+						&cli.BoolFlag{
+							Name:  "with-gitlab-oidc",
+							Usage: "Enables assuming of IAM role via OIDC for Gitlab CI/CD",
 							Value: false,
 						},
 					},
@@ -163,8 +168,8 @@ func main() {
 							provider := assumeRoleByArn(c.String("role-arn"), c.String("role-session-name"), awsConfig)
 							awsConfig.Credentials = provider
 						}
-						if c.Bool("with-gha-oidc") {
-							qbconfOperationMode = "generate::aws::with-gha-oidc"
+						if c.Bool("with-gha-oidc") || c.Bool("with-gitlab-oidc") {
+							qbconfOperationMode = "generate::aws::use-oidc"
 
 							logSugar.Infow("change operating mode",
 								"mode", qbconfOperationMode,
@@ -176,8 +181,14 @@ func main() {
 
 							assumeRoleWithWebIdentityErr := retryWithExponentialBackoff(maxRetries, backoffBaseSeconds, func() error {
 								var err error
+								var oidcToken *string
 
-								oidcToken, err := getOidcGithubActionsToken()
+								if c.Bool("with-gha-oidc") {
+									oidcToken, err = getOidcGithubActionsToken()
+								} else {
+									oidcToken, err = getOidcGitlabToken()
+								}
+
 								if err != nil {
 									return err
 								}
@@ -424,6 +435,16 @@ type MissingEnvVarError struct {
 // Error implements the error interface for MissingEnvVarError.
 func (e MissingEnvVarError) Error() string {
 	return fmt.Sprintf("missing required environment variable: %s", e.EnvVarName)
+}
+
+func getOidcGitlabToken() (*string, error) {
+	token, exists := os.LookupEnv("CI_JOB_JWT_V2")
+	if !exists {
+		err := MissingEnvVarError{EnvVarName: "CI_JOB_JWT_V2"}
+		logSugar.Error(err)
+		return nil, fmt.Errorf("CI_JOB_JWT_V2 environment variable is not available")
+	}
+	return &token, nil
 }
 
 func getOidcGithubActionsToken() (*string, error) {
