@@ -1,0 +1,22 @@
+version: "2"
+
+linters:
+  # The standard set already enables errcheck, govet, ineffassign,
+  # staticcheck, and unused.
+  enable:
+    - gosec
+    - misspell
+    - unconvert
+    - unparam
+  exclusions:
+    rules:
+      # Test fixtures trip gosec's credential/path/permission heuristics
+      # (G101 on dummy tokens, G304/G306 on t.TempDir() paths).
+      - path: _test\.go
+        linters:
+          - gosec
+
+formatters:
+  enable:
+    - gofmt
+    - goimports

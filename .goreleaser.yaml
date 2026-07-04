@@ -1,20 +1,20 @@
+version: 2
+
 before:
   hooks:
     - go mod tidy
 
 builds:
-  - env:
+  - main: ./cmd/qbconf
+    env:
       - CGO_ENABLED=0
-    # hooks:
-    #   post:
-    #     - upx -1 '{{ .Env.PWD }}/dist/{{ .Os }}_{{ .Arch }}_qbconf'
     ldflags: -s -w -X main.version={{.Version}}
     goos:
       - linux
       - darwin
     goarch:
       - amd64
-      - arm64    
+      - arm64
     no_unique_dist_dir: true
     binary: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}'
 
@@ -33,12 +33,10 @@ changelog:
       - '^test:'
 
 brews:
-  -
-    name: qbconf
-    homepage: "https://github.com/RaftechNL/qbconf"
-    tap:
+  - name: qbconf
+    homepage: "https://github.com/raftechio/qbconf"
+    repository:
       owner: RaftechNL
       name: homebrew-toolbox
     install: |
-      mv '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}', 'qbconf'    
-      bin.install "qbconf"
+      bin.install "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}" => "qbconf"
