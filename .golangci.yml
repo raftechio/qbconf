@@ -1,0 +1,15 @@
+version: "2"
+
+linters:
+  # The standard set already enables errcheck, govet, ineffassign,
+  # staticcheck, and unused.
+  enable:
+    - gosec
+    - misspell
+    - unconvert
+    - unparam
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
