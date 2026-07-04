@@ -4,7 +4,7 @@ package retry
 import (
 	"context"
 	"errors"
-	"math/rand"
+	"math/rand/v2"
 	"time"
 )
 
@@ -65,5 +65,5 @@ func (p Policy) delay(attempt int) time.Duration {
 	if d <= 0 {
 		return 0
 	}
-	return time.Duration(rand.Int63n(int64(d)) + 1)
+	return time.Duration(rand.Int64N(int64(d)) + 1) // #nosec G404 -- backoff jitter is not security-sensitive
 }

@@ -58,7 +58,7 @@ func TestGitHubActionsToken(t *testing.T) {
 				t.Errorf("keep = %q, want original query preserved", got)
 			}
 			w.Header().Set("Content-Type", "application/json")
-			w.Write([]byte(`{"value":"the-jwt"}`))
+			_, _ = w.Write([]byte(`{"value":"the-jwt"}`))
 		}))
 		defer srv.Close()
 
@@ -87,7 +87,7 @@ func TestGitHubActionsToken(t *testing.T) {
 
 	t.Run("empty token value is an error", func(t *testing.T) {
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-			w.Write([]byte(`{"value":""}`))
+			_, _ = w.Write([]byte(`{"value":""}`))
 		}))
 		defer srv.Close()
 
@@ -100,7 +100,7 @@ func TestGitHubActionsToken(t *testing.T) {
 
 	t.Run("malformed json is an error", func(t *testing.T) {
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-			w.Write([]byte(`not json`))
+			_, _ = w.Write([]byte(`not json`))
 		}))
 		defer srv.Close()
 

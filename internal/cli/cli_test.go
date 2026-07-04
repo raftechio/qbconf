@@ -45,7 +45,7 @@ func newTestRegistry(captured **config.Config) *provider.Registry {
 	return r
 }
 
-func run(t *testing.T, registry *provider.Registry, args ...string) (stdout, stderr string, err error) {
+func run(t *testing.T, registry *provider.Registry, args ...string) (stdout string, err error) {
 	t.Helper()
 	root := newRootCmd(registry, "test-version")
 	var out, errOut bytes.Buffer
@@ -53,13 +53,13 @@ func run(t *testing.T, registry *provider.Registry, args ...string) (stdout, std
 	root.SetErr(&errOut)
 	root.SetArgs(args)
 	err = root.ExecuteContext(context.Background())
-	return out.String(), errOut.String(), err
+	return out.String(), err
 }
 
 func TestGenerateAWSWritesKubeconfig(t *testing.T) {
 	output := filepath.Join(t.TempDir(), "kubeconfig.yaml")
 
-	stdout, _, err := run(t, newTestRegistry(nil),
+	stdout, err := run(t, newTestRegistry(nil),
 		"generate", "aws", "--cluster-name", "demo", "--output-file", output)
 	if err != nil {
 		t.Fatalf("execute error = %v", err)
@@ -80,14 +80,14 @@ func TestGenerateAWSWritesKubeconfig(t *testing.T) {
 }
 
 func TestGenerateAWSRequiresClusterName(t *testing.T) {
-	_, _, err := run(t, newTestRegistry(nil), "generate", "aws")
+	_, err := run(t, newTestRegistry(nil), "generate", "aws")
 	if err == nil || !strings.Contains(err.Error(), "cluster-name is required") {
 		t.Errorf("execute error = %v, want cluster-name validation error", err)
 	}
 }
 
 func TestGenerateAWSRejectsInvalidAuthMode(t *testing.T) {
-	_, _, err := run(t, newTestRegistry(nil),
+	_, err := run(t, newTestRegistry(nil),
 		"generate", "aws", "--cluster-name", "demo", "--auth", "bogus")
 	if err == nil || !strings.Contains(err.Error(), "invalid auth mode") {
 		t.Errorf("execute error = %v, want invalid auth mode error", err)
@@ -95,7 +95,7 @@ func TestGenerateAWSRejectsInvalidAuthMode(t *testing.T) {
 }
 
 func TestGenerateAWSAuthModeRequiresRoleARN(t *testing.T) {
-	_, _, err := run(t, newTestRegistry(nil),
+	_, err := run(t, newTestRegistry(nil),
 		"generate", "aws", "--cluster-name", "demo", "--auth", config.AuthAssumeRole)
 	if err == nil || !strings.Contains(err.Error(), "role-arn is required") {
 		t.Errorf("execute error = %v, want role-arn validation error", err)
@@ -106,7 +106,7 @@ func TestGenerateAWSDeprecatedFlagMapsToAuth(t *testing.T) {
 	output := filepath.Join(t.TempDir(), "kubeconfig.yaml")
 
 	var captured *config.Config
-	_, _, err := run(t, newTestRegistry(&captured),
+	_, err := run(t, newTestRegistry(&captured),
 		"generate", "aws",
 		"--cluster-name", "demo",
 		"--output-file", output,
@@ -127,7 +127,7 @@ func TestGenerateAWSExplicitAuthWinsOverDeprecatedFlag(t *testing.T) {
 	output := filepath.Join(t.TempDir(), "kubeconfig.yaml")
 
 	var captured *config.Config
-	_, _, err := run(t, newTestRegistry(&captured),
+	_, err := run(t, newTestRegistry(&captured),
 		"generate", "aws",
 		"--cluster-name", "demo",
 		"--output-file", output,
@@ -146,7 +146,7 @@ func TestGenerateAWSReadsEnvironmentVariables(t *testing.T) {
 	output := filepath.Join(t.TempDir(), "kubeconfig.yaml")
 
 	var captured *config.Config
-	_, _, err := run(t, newTestRegistry(&captured),
+	_, err := run(t, newTestRegistry(&captured),
 		"generate", "aws", "--output-file", output)
 	if err != nil {
 		t.Fatalf("execute error = %v", err)
@@ -161,7 +161,7 @@ func TestGenerateAWSHonorsAWSRegionEnvVar(t *testing.T) {
 	output := filepath.Join(t.TempDir(), "kubeconfig.yaml")
 
 	var captured *config.Config
-	_, _, err := run(t, newTestRegistry(&captured),
+	_, err := run(t, newTestRegistry(&captured),
 		"generate", "aws", "--cluster-name", "demo", "--output-file", output)
 	if err != nil {
 		t.Fatalf("execute error = %v", err)
@@ -172,7 +172,7 @@ func TestGenerateAWSHonorsAWSRegionEnvVar(t *testing.T) {
 }
 
 func TestVersionCommand(t *testing.T) {
-	stdout, _, err := run(t, newTestRegistry(nil), "version")
+	stdout, err := run(t, newTestRegistry(nil), "version")
 	if err != nil {
 		t.Fatalf("execute error = %v", err)
 	}

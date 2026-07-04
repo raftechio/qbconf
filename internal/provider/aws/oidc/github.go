@@ -68,7 +68,7 @@ func (g *GitHubActions) Token(ctx context.Context, audience string) (string, err
 	if err != nil {
 		return "", fmt.Errorf("request GitHub OIDC token: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 4<<10))

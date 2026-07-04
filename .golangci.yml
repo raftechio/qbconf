@@ -8,6 +8,13 @@ linters:
     - misspell
     - unconvert
     - unparam
+  exclusions:
+    rules:
+      # Test fixtures trip gosec's credential/path/permission heuristics
+      # (G101 on dummy tokens, G304/G306 on t.TempDir() paths).
+      - path: _test\.go
+        linters:
+          - gosec
 
 formatters:
   enable:

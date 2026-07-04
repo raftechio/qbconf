@@ -128,7 +128,7 @@ func (a *app) runGenerateAWS(cmd *cobra.Command, cfgFile string) error {
 	}
 
 	log.Info().Str("file", cfg.OutputFile).Msg("kubeconfig written")
-	fmt.Fprintf(cmd.OutOrStdout(), "kubeconfig written to %s\n", cfg.OutputFile)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "kubeconfig written to %s\n", cfg.OutputFile)
 	return nil
 }
 
